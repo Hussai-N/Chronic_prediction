@@ -2,11 +2,11 @@
 
 This repository contains a machine learning project that predicts the presence of chronic kidney disease (CKD) based on patient health indicators. The dataset is preprocessed, analyzed, and used to train multiple models for classification.
 
-Dataset
+# Dataset
 
 The dataset used in this project is kidney_disease.csv, which contains patient information such as blood pressure, glucose levels, red blood cell count, and other vital health indicators. The target variable is class, which indicates whether a patient has CKD (1) or not (0).
 
-Features
+# Features
 
 The dataset includes the following features:
 
@@ -14,7 +14,7 @@ Numerical Features: Age, blood pressure, blood glucose random, blood urea, serum
 
 Categorical Features: Red blood cells, pus cell, pus cell clumps, bacteria, hypertension, diabetes mellitus, coronary artery disease, appetite, pedal edema, anemia, etc.
 
-Data Preprocessing
+# Data Preprocessing
 
 Handled missing values by imputing mean for numerical columns and mode for categorical columns.
 
@@ -24,7 +24,7 @@ Fixed inconsistent categorical values.
 
 Encoded categorical variables into numeric representations.
 
-Model Training
+# Model Training
 
 The following machine learning models were trained:
 
