@@ -1,0 +1,92 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
+# Load dataset
+df_data = pd.read_csv('kidney_disease.csv')
+
+# Drop unnecessary column
+df_data.drop('id', axis=1, inplace=True)
+
+# Rename columns for consistency
+df_data.columns = [
+    'age', 'blood_pressure', 'specific_gravity', 'albumin', 'sugar', 
+    'red_blood_cells', 'pus_cell', 'pus_cell_clumps', 'bacteria', 
+    'blood_glucose_random', 'blood_urea', 'serum_creatinine', 'sodium', 
+    'potassium', 'haemoglobin', 'packed_cell_volume', 'white_blood_cell_count', 
+    'red_blood_cell_count', 'hypertension', 'diabetes_mellitus', 
+    'coronary_artery_disease', 'appetite', 'peda_edema', 'anemia', 'class'
+]
+
+# Convert specific columns to numeric
+def convert_text_to_numeric(df_data, column):
+    df_data[column] = pd.to_numeric(df_data[column], errors='coerce')
+
+txt_columns = ['packed_cell_volume', 'white_blood_cell_count', 'red_blood_cell_count']
+for col in txt_columns:
+    convert_text_to_numeric(df_data, col)
+
+# Handling missing values
+num_cols = df_data.select_dtypes(include=['number']).columns.tolist()
+cat_cols = df_data.select_dtypes(include=['object']).columns.tolist()
+
+for col in num_cols:
+    df_data[col].fillna(df_data[col].mean(), inplace=True)
+for col in cat_cols:
+    df_data[col].fillna(df_data[col].mode()[0], inplace=True)
+
+# Fixing inconsistent categorical values
+df_data['diabetes_mellitus'].replace({'\tyes': 'yes', '\tno': 'no'}, inplace=True, regex=True)
+df_data['coronary_artery_disease'].replace({'\tno': 'no'}, inplace=True, regex=True)
+df_data['class'].replace({'ckd\t': 'ckd', 'notckd': 'not ckd'}, inplace=True, regex=True)
+
+# Encoding categorical variables
+df_data['class'] = df_data['class'].map({'ckd': 1, 'not ckd': 0})
+df_data['red_blood_cells'] = df_data['red_blood_cells'].map({'normal': 1, 'abnormal': 0})
+df_data['pus_cell'] = df_data['pus_cell'].map({'normal': 1, 'abnormal': 0})
+df_data['pus_cell_clumps'] = df_data['pus_cell_clumps'].map({'present': 1, 'notpresent': 0})
+df_data['bacteria'] = df_data['bacteria'].map({'present': 1, 'notpresent': 0})
+df_data['hypertension'] = df_data['hypertension'].map({'yes': 1, 'no': 0})
+df_data['diabetes_mellitus'] = df_data['diabetes_mellitus'].map({'yes': 1, 'no': 0})
+df_data['coronary_artery_disease'] = df_data['coronary_artery_disease'].map({'yes': 1, 'no': 0})
+df_data['appetite'] = df_data['appetite'].map({'good': 1, 'poor': 0})
+df_data['peda_edema'] = df_data['peda_edema'].map({'yes': 1, 'no': 0})
+df_data['anemia'] = df_data['anemia'].map({'yes': 1, 'no': 0})
+
+# Data visualization
+plt.figure(figsize=(15, 8))
+sns.heatmap(df_data.corr(), annot=True, linewidths=0.8)
+plt.show()
+
+# Train-test split
+x = df_data.drop("class", axis=1)
+y = df_data["class"]
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=25)
+
+# Model training and evaluation
+models = [
+    ('Naive Bayes', GaussianNB()),
+    ('KNN', KNeighborsClassifier(n_neighbors=8)),
+    ('Random Forest', RandomForestClassifier()),
+    ('Decision Tree', DecisionTreeClassifier()),
+    ('SVM', SVC(kernel='linear'))
+]
+
+for name, model in models:
+    model.fit(x_train, y_train)
+    y_pred = model.predict(x_test)
+    print(f"{name} Model:")
+    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+    print(f"Precision: {precision_score(y_test, y_pred):.4f}")
+    print(f"Recall: {recall_score(y_test, y_pred):.4f}")
+    print(f"F1 Score: {f1_score(y_test, y_pred):.4f}\n")
